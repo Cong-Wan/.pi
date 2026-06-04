@@ -1,0 +1,10 @@
+{
+  "lastChangelogVersion": "0.78.0",
+  "defaultProvider": "bailian",
+  "defaultModel": "qwen3.7-plus",
+  "defaultThinkingLevel": "high",
+  "theme": "light",
+  "compaction": {
+    "enabled": false
+  }
+}

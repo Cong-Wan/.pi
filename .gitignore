@@ -1,0 +1,8 @@
+.DS_Store
+*.log
+*.pid
+*.bak
+agent/sessions/
+agent/models.json
+agent/auth.json
+agent/docs/

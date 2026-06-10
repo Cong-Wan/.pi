@@ -7,3 +7,4 @@ agent/models.json
 agent/auth.json
 agent/docs/
 agent/extensions.backup.*/
+agent/bin/

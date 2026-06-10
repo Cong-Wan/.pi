@@ -1,7 +1,7 @@
 {
-  "lastChangelogVersion": "0.78.0",
-  "defaultProvider": "bailian",
-  "defaultModel": "qwen3.7-plus",
+  "lastChangelogVersion": "0.79.1",
+  "defaultProvider": "glm",
+  "defaultModel": "glm-5.1",
   "defaultThinkingLevel": "high",
   "theme": "light",
   "compaction": {

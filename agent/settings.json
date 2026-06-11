@@ -1,10 +1,13 @@
 {
   "lastChangelogVersion": "0.79.1",
-  "defaultProvider": "glm",
-  "defaultModel": "glm-5.1",
+  "defaultProvider": "sub2api",
+  "defaultModel": "gpt-5.5",
   "defaultThinkingLevel": "high",
   "theme": "light",
   "compaction": {
     "enabled": false
+  },
+  "terminal": {
+    "showTerminalProgress": true
   }
 }

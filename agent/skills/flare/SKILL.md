@@ -1,179 +1,180 @@
 ---
 name: flare
-description: Use when you have a spec or requirements for a multi-step task, before touching code
-
+description: 当你有一份规范或需求用于多步骤任务时，在动手写代码之前使用。
 ---
 
-# Writing Plans
+# 编写计划
 
-## Overview
+## 前置询问
 
-Write comprehensive implementation plans assuming the engineer has zero context for our codebase and questionable taste. Document everything they need to know: which files to touch for each task, complete implementation code, test code, docs they might need to check, and exact commands to run. Give them the whole plan as bite-sized tasks. DRY. YAGNI. Plan-Driven.
+**在开始编写计划之前，必须先向用户确认：**
 
-Each task follows a strict sequence: **implement first, then write tests to verify the implementation matches the plan's stated goal.** Tests are not written to drive the implementation — they are written to confirm it. A task is not complete until every test passes. The engineer must not proceed to the next task until the current task's tests are all green.
+> "在计划中，是否需要更详细的打印输出？如果不需要，我会默认在关键节点加入打印输出，并通过 `--debug` 参数来控制是否启用详细日志。"
 
-Assume they are a skilled developer, but know almost nothing about our toolset or problem domain. Assume they don't know good test design very well.
+- 如果用户回答**需要**：在计划中安排详尽的打印/日志输出，关键路径每一步都输出状态信息。
+- 如果用户回答**不需要**（或跳过）：默认只在关键节点加入简洁的打印输出。
 
-**Announce at start:** "I'm using the flare skill to create the implementation plan."
+**无论用户选择哪种，所有打印输出都必须套上 `--debug` 参数控制。** 即传入 `--debug` 时输出详细日志，不传则只打印关键节点信息（或完全静默）。`--debug` 参数的解析逻辑应作为基础设施在最早的任务中实现。
 
-**Save plans to:** `docs/flare/YYYYMMDD_<topic>.md`
+**开始时声明：** "我正在使用 flare 技能来创建实现计划。"
 
-## Scope Check
+**计划保存到：** `docs/flare/YYYYMMDD_<topic>.md`
 
-If the spec covers multiple independent subsystems, it should have been broken into sub-project specs during recipe skill. If it wasn't, suggest breaking this into separate plans — one per subsystem. Each plan should produce working, testable software on its own.
+## 概述
 
-## File Structure
+编写全面的实现计划，假设工程师对我们的代码库零上下文且品味存疑。记录他们需要知道的一切：每个任务要修改哪些文件、完整的实现代码、可能需要查阅的文档，以及要运行的确切命令。把整个计划作为小步任务给他们。DRY。YAGNI。计划驱动。
 
-Before defining tasks, map out which files will be created or modified and what each one is responsible for. This is where decomposition decisions get locked in.
+每个任务遵循严格的顺序：**先实现，再通过运行确认构建通过、运行无异常、关键输出符合预期，来验证实现是否匹配计划所声明的目标。** 在确认目标达成之前，任务不算完成。在当前任务的目标确认达成之前，工程师不得进入下一个任务。
 
-- Design units with clear boundaries and well-defined interfaces. Each file should have one clear responsibility.
-- You reason best about code you can hold in context at once, and your edits are more reliable when files are focused. Prefer smaller, focused files over large ones that do too much.
-- Files that change together should live together. Split by responsibility, not by technical layer.
-- In existing codebases, follow established patterns. If the codebase uses large files, don't unilaterally restructure - but if a file you're modifying has grown unwieldy, including a split in the plan is reasonable.
+假设他们是一名初级开发者，对代码库、工具集和问题域都缺乏了解。
 
-This structure informs the task decomposition. Each task should produce self-contained changes that make sense independently.
+**⚠️ 重要约束：**
+- **禁止使用任何测试框架。** 不要在计划中安排编写测试文件（如 `.test.ts`、`.test.py`、`.spec.ts` 等），不要使用 Jest、Pytest、unittest、Vitest 或任何测试工具。验证通过手动运行代码、构建检查、打印输出来完成。
+- **禁止在任务中编排 Git 相关操作。** 不要在任务步骤中包含 `git add`、`git commit`、`git push` 等 Git 命令。代码提交由用户在计划执行完毕后另行处理。
 
-## Plan Document Header
+## 范围检查
 
-**Every plan MUST start with this header:**
+如果规范涵盖多个独立子系统，它本应在 recipe 技能期间被拆分为子项目规范。如果没有，建议将其拆分为单独的计划 —— 每个子系统一个。每个计划应独立产出可工作的软件。
+
+## 文件结构
+
+在定义任务之前，绘制出将创建或修改哪些文件，以及每个文件的职责。这是锁定分解决策的地方。
+
+- 设计具有清晰边界和明确接口的单元。每个文件应有一个明确的职责。
+- 你最适合对能一次性在上下文中容纳的代码进行推理，并且当文件更专注时，你的编辑也更可靠。倾向于小而专注的文件，而不是那些做太多事情的大文件。
+- 一起变化的文件应放在一起。按职责拆分，而不是按技术层。
+- 在已有代码库中，遵循既有模式。如果代码库使用大文件，不要单方面重构 —— 但如果你正在修改的文件已经变得笨重，在计划中包含拆分是合理的。
+
+此结构为任务分解提供依据。每个任务都应产生自洽的、能独立讲得通的变更。
+
+## 计划文档头
+
+**每份计划必须以此头开始：**
 
 ```markdown
-# [Feature Name] Implementation Plan
+# [功能名称] 实现计划
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use subagent-driven-development (recommended) or executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **面向智能体工作者：** 必需子技能：使用 subagent-driven-development（推荐）或 executing-plans 来逐任务实现此计划。步骤使用复选框（`- [ ]`）语法进行追踪。
 
-**Goal:** [One sentence describing what this builds]
+**目标：** [一句话描述此构建要做什么]
 
-**Architecture:** [2-3 sentences about approach]
+**架构：** [2-3 句话说明方法]
 
-**Tech Stack:** [Key technologies/libraries]
+**技术栈：** [关键技术/库]
 
 ---
 ```
 
 ------
 
-### Task N: [Short descriptive name]
+### Task N: [简短的描述性名称]
 
-**Goal:** One sentence stating exactly what this task achieves, written in terms of observable behavior or system state — not in terms of code written.
+**目标：** 一句话明确陈述此任务要达成的目标，以可观察行为或系统状态的方式书写 —— 而非以编写的代码来描述。
 
-**Files touched:**
+**涉及的文件：**
 
-- `path/to/implementation.ts` — what this file does
-- `path/to/implementation.test.ts` — what this test file covers
+- `path/to/implementation.ts` — 此文件的作用
 
 ------
 
-#### Step 1 — Implement
+#### Step 1 — 实现
 
-Write the complete implementation. No ellipsis. No `// ... rest of function`. No `// TODO`. Every line the engineer needs must be present.
+编写完整的实现。没有省略号。没有 `// ... rest of function`。没有 `// TODO`。工程师需要的每一行都必须出现。
 
 ```typescript
 // path/to/implementation.ts
-// Full file content here — imports, types, logic, exports
+// 完整文件内容在此 —— 导入、类型、逻辑、导出
 ```
 
 ------
 
-#### Step 2 — Write tests based on the plan goal
+#### Step 2 — 运行验证
 
-Write tests that verify the implementation satisfies the **Goal** stated at the top of this task. Tests must:
+运行代码以确认实现满足本任务顶部声明的**目标**。验证标准（三层递进）：
 
-- Be complete and copy-pasteable as-is (include imports, test data, fixtures, mocks)
-- Assert the behaviors described in the Goal — not implementation internals
-- Cover the primary success case, at least one edge case, and at least one failure/error case if applicable
+1. **构建通过** — 编译/解释无语法错误（解释型语言此步直接跳过）
+2. **运行无异常** — 执行过程无 crash、无报错
+3. **关键输出符合预期** — 核心功能产出正确结果
 
-```typescript
-// path/to/implementation.test.ts
-// Full test file content here — imports, describe block, all test cases with assertions
-```
-
-------
-
-#### Step 3 — Run tests and confirm all pass
+提供确切的运行命令：
 
 ```bash
-$ <exact command to run only this task's tests>
-# Expected output:
-#   PASS path/to/implementation.test.ts
-#   ✓ [test name] (Xms)
-#   ✓ [test name] (Xms)
-#   Test Suites: 1 passed, 1 total
-#   Tests: N passed, N total
+$ <运行此任务代码的确切命令>
+# 预期：构建通过，运行无异常，关键输出符合预期
 ```
 
-If any test fails, fix the **implementation** — do not delete or weaken the test. Repeat until all tests are green.
+如果验证不通过，修复**实现** —— 不要跳过或弱化验证。重复此过程直到三层验证全部通过。
 
 ------
 
-✅ **Done when:** Every test in Step 3 is green . **Do not start the next task until this condition is met.**
+✅ **完成的标志：** 第二步验证通过 —— 构建通过，运行无异常，关键输出符合预期。**在满足此条件之前不要开始下一个任务。**
 
 ------
 
-## No Placeholders
+## 不要留占位符
 
-Every step must contain the actual content an engineer needs. These are **plan failures** — never write them:
+每个步骤必须包含工程师所需的实际内容。这些是**计划的失败** —— 永远不要写：
 
-- "TBD", "TODO", "implement later", "fill in details"
-- "Add appropriate error handling" / "add validation" / "handle edge cases" — write the actual code
-- "Write tests for the above" without providing the actual test code
-- "Similar to Task N" — repeat the full code; the engineer may be reading tasks out of order
-- Steps that describe what to do without showing how — code blocks are required for every code step
-- References to types, functions, or methods not defined in any task in this plan
-- Test code that uses `// mock this` or `// assert something` as placeholders
+- "TBD"、"TODO"、"稍后实现"、"填写详情"
+- "添加适当的错误处理" / "添加校验" / "处理边界情况" —— 写出实际代码
+- "与 Task N 类似" —— 重复完整代码；工程师可能不按顺序阅读任务
+- 描述该做什么但未说明怎么做的步骤 —— 每一步代码块都是必需的
+- 引用了计划中任何任务都未定义的类型、函数或方法
 
 ------
 
-## Remember
+## 牢记
 
-- Exact file paths in every task, every step
-- Complete code in every step — if a step touches code, show the entire relevant code
-- Exact terminal commands with exact expected output
-- Tests verify the Goal, not the code structure
-- DRY, YAGNI, frequent commits
-- If a task's Goal is too broad to test in one test file, split the task
-
-------
-
-## Self-Review
-
-After writing the complete plan, look at the spec with fresh eyes and check the plan against it. This is a checklist you run yourself — not a subagent dispatch.
-
-**1. Spec coverage:** Skim each section/requirement in the spec. Can you point to a task that implements it? List any gaps. If a requirement has no corresponding task, add the task.
-
-**2. Placeholder scan:** Search your plan for red flags — any of the patterns from the "No Placeholders" section above. Fix every one before saving.
-
-**3. Type consistency:** Do the types, method signatures, and property names you used in later tasks match what you defined in earlier tasks? A function called `clearLayers()` in Task 3 but `clearFullLayers()` in Task 7 is a bug waiting to happen. Reconcile all mismatches.
-
-**4. Test completeness:** For every task (Task 1 onward), verify:
-
-- The test covers all behaviors described in that task's **Goal**
-- The test code is complete and runnable — not pseudocode or a sketch
-- There is at least one edge case or failure case tested where applicable
-- The ✅ Done condition is explicit and unambiguous
-
-Fix any issues inline. No need to re-review after fixing — just correct and move on.
+- 每个任务、每个步骤都要写明确切的文件路径
+- 每个步骤都要有完整代码 —— 如果某步骤涉及代码，要展示整个相关代码
+- 准确的终端命令和准确的预期输出
+- 验证标准：构建通过、运行无异常、关键输出符合预期
+- 禁止使用测试框架
+- 禁止在任务中编排 Git 操作
+- 所有打印输出一律套上 `--debug` 参数控制，`--debug` 解析逻辑作为基础设施最早实现
+- DRY、YAGNI
+- 如果某个任务的目标过于宽泛，无法在一个验证步骤中确认，就拆分该任务
 
 ------
 
-## Execution Handoff
+## 自我复审
 
-After saving the plan, offer execution choice:
+写完完整计划后，用全新的眼光看待规范并对照计划进行检查。这是你自己运行的清单 —— 不是分派子代理。
 
-**"Plan complete and saved to `docs/flare/<filename>.md`. Two execution options:**
+**1. 规范覆盖：** 浏览规范中的每个章节/需求。你能指出实现它的任务吗？列出任何遗漏。如果需求没有对应任务，添加该任务。
 
-**1. Subagent-Driven (recommended)** — I dispatch a fresh subagent per task, review between tasks, fast iteration
+**2. 占位符扫描：** 在计划中搜索红色信号 —— 上述"不要留占位符"一节中的任何模式。保存前修复每一个。
 
-**2. Inline Execution** — Execute tasks in this session using executing-plans, batch execution with checkpoints
+**3. 类型一致性：** 后续任务中使用的类型、方法签名和属性名是否与早期任务中定义的匹配？Task 3 中的函数叫 `clearLayers()`，但 Task 7 中叫 `clearFullLayers()`，这会是一个等待发生的 bug。协调所有不匹配。
 
-**Which approach?"**
+**4. 验证完整性：** 对每个任务（Task 1 起），验证：
 
-**If Subagent-Driven chosen:**
+- 每个任务都有运行命令，能确认构建通过、运行无异常
+- 关键输出有明确预期，可判断是否符合
+- ✅ 完成条件明确且无歧义
 
-- **REQUIRED SUB-SKILL:** Use subagent-driven-development
-- Fresh subagent per task + two-stage review
+就地修复任何问题。修复后无需重新复审 —— 改正并继续。
 
-**If Inline Execution chosen:**
+------
 
-- **REQUIRED SUB-SKILL:** Use executing-plans
-- Batch execution with checkpoints for review
+## 执行交接
+
+保存计划后，提供执行选择：
+
+**"计划已完成并保存到 `docs/flare/<filename>.md`。两种执行选项：**
+
+**1. 子代理驱动（推荐）** —— 我为每个任务分派一个全新的子代理，在任务之间进行复审，快速迭代
+
+**2. 内联执行** —— 使用 executing-plans 在本会话中执行任务，带复审检查点的批处理
+
+**选择哪种方式？"**
+
+**如果选择子代理驱动：**
+
+- **必需子技能：** 使用 subagent-driven-development
+- 每个任务全新的子代理 + 两阶段复审
+
+**如果选择内联执行：**
+
+- **必需子技能：** 使用 executing-plans
+- 带复审检查点的批处理执行
